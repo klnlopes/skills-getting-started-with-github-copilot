@@ -49,7 +49,7 @@ function createStepCard(step) {
 
     card.innerHTML = `
         <div class="step-card-header">
-            <div class="step-number">${step.completed ? '' : step.step_number}</div>
+            <div class="step-number">${step.step_number}</div>
             <div class="step-title">
                 <h3>${step.title}</h3>
             </div>

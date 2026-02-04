@@ -153,7 +153,7 @@ class TestStepTrackerEndpoints:
         
         steps = response.json()
         assert isinstance(steps, list)
-        assert len(steps) == 6  # 5 regular steps + 1 review step
+        assert len(steps) == 6  # 6 total steps (5 numbered steps + 1 review step)
         
         # Verify step structure
         first_step = steps[0]

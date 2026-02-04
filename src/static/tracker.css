@@ -206,9 +206,14 @@ header h1 {
     background: var(--success-color);
 }
 
-.step-card.completed .step-number::before {
+.step-card.completed .step-number::after {
     content: "✓";
+    position: absolute;
     font-size: 1.1rem;
+}
+
+.step-card:not(.completed) .step-number {
+    /* Show step number for incomplete steps */
 }
 
 .step-title {
