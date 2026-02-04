@@ -28,6 +28,26 @@ header h1 {
   margin-bottom: 10px;
 }
 
+.header-nav {
+  margin-top: 15px;
+}
+
+.tracker-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.tracker-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 main {
   display: flex;
   flex-wrap: wrap;

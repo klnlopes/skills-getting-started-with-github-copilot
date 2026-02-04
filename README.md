@@ -29,6 +29,55 @@
 
 *There's no better way to learn than building things!* 🚀
 
+## 📊 Assessment Step Tracker
+
+This repository now includes a comprehensive **Assessment Step Tracker** to help you monitor your progress through the GitHub Copilot exercise!
+
+### Features
+
+- ✅ Track completion of all 6 assessment steps
+- 📈 Visual progress bar showing your completion percentage
+- 🎯 Current step indicator to guide your learning
+- 🔄 Interactive step cards (click to mark complete/incomplete)
+- 🌐 Full REST API for programmatic access
+
+### Quick Start
+
+1. **Run the application:**
+   ```bash
+   pip install -r requirements.txt
+   uvicorn src.app:app --reload --port 8000
+   ```
+
+2. **Access the tracker:**
+   - Main page: http://localhost:8000/
+   - Step tracker: http://localhost:8000/static/tracker.html
+
+3. **Use the API:**
+   ```bash
+   # Get all steps
+   curl http://localhost:8000/steps
+   
+   # Mark step as complete
+   curl -X POST http://localhost:8000/steps/1-preparing/complete
+   
+   # Get progress
+   curl http://localhost:8000/steps/progress/summary
+   ```
+
+### Documentation
+
+For complete documentation, see [STEP_TRACKER.md](STEP_TRACKER.md)
+
+### Steps Tracked
+
+1. **Hello Copilot** - Introduction and basic features
+2. **Getting work done with Copilot** - Fixing bugs and generating data
+3. **Edit Mode** - Multi-file changes with Copilot
+4. **Agent Mode** - Autonomous editing capabilities
+5. **Copilot on GitHub** - PR summaries and code reviews
+6. **Review** - Exercise completion and recap
+
 </div>
 
 ---

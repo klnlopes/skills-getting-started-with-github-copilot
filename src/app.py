@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
+from src.step_tracker import step_tracker, StepInfo, StepProgress
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -123,3 +124,51 @@ def unregister_from_activity(activity_name: str, email: str):
     # Remove student
     activity["participants"].remove(email)
     return {"message": f"Unregistered {email} from {activity_name}"}
+
+
+# ===== Assessment Step Tracking Endpoints =====
+
+@app.get("/steps", response_model=list[StepInfo])
+def get_all_steps():
+    """Get all assessment steps"""
+    return step_tracker.get_all_steps()
+
+
+@app.get("/steps/{step_id}", response_model=StepInfo)
+def get_step(step_id: str):
+    """Get a specific step by ID"""
+    step = step_tracker.get_step(step_id)
+    if not step:
+        raise HTTPException(status_code=404, detail=f"Step '{step_id}' not found")
+    return step
+
+
+@app.post("/steps/{step_id}/complete", response_model=StepInfo)
+def mark_step_complete(step_id: str):
+    """Mark a step as completed"""
+    try:
+        return step_tracker.mark_step_complete(step_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.post("/steps/{step_id}/incomplete", response_model=StepInfo)
+def mark_step_incomplete(step_id: str):
+    """Mark a step as incomplete"""
+    try:
+        return step_tracker.mark_step_incomplete(step_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/steps/progress/summary", response_model=StepProgress)
+def get_progress():
+    """Get overall progress summary"""
+    return step_tracker.get_progress()
+
+
+@app.post("/steps/reset")
+def reset_all_steps():
+    """Reset all steps to incomplete"""
+    step_tracker.reset_all_steps()
+    return {"message": "All steps have been reset"}

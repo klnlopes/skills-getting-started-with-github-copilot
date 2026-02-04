@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot Assessment Step Tracker</title>
+    <link rel="stylesheet" href="tracker.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 GitHub Copilot Assessment Tracker</h1>
+            <p class="subtitle">Track your progress through the "Getting Started with GitHub Copilot" exercise</p>
+        </header>
+
+        <div class="progress-section">
+            <h2>Overall Progress</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <div class="progress-stats">
+                    <span id="progress-text">0%</span>
+                    <span id="steps-count">0/0 steps completed</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="current-step-section" id="current-step-section" style="display: none;">
+            <h3>📍 Current Step</h3>
+            <div id="current-step-info" class="current-step-card"></div>
+        </div>
+
+        <div class="steps-section">
+            <div class="steps-header">
+                <h2>Assessment Steps</h2>
+                <button id="reset-btn" class="reset-btn">Reset All Steps</button>
+            </div>
+            <div id="steps-list" class="steps-list"></div>
+        </div>
+
+        <div class="back-to-activities">
+            <a href="/static/index.html" class="btn-secondary">← Back to Activities</a>
+        </div>
+    </div>
+
+    <script src="tracker.js"></script>
+</body>
+</html>
