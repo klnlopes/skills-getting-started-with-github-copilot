@@ -5,6 +5,7 @@ Tests for the Mergington High School API
 import pytest
 from fastapi.testclient import TestClient
 from src.app import app, activities
+from src.step_tracker import step_tracker
 
 
 @pytest.fixture
@@ -25,6 +26,14 @@ def reset_activities():
     # Restore original participants after test
     for name, participants in original_participants.items():
         activities[name]["participants"] = participants
+
+
+@pytest.fixture(autouse=True)
+def reset_step_tracker():
+    """Reset step tracker to initial state before each test"""
+    step_tracker.reset_all_steps()
+    yield
+    step_tracker.reset_all_steps()
 
 
 class TestGetActivities:
@@ -132,3 +141,140 @@ class TestRootRedirect:
         response = client.get("/", follow_redirects=False)
         assert response.status_code == 307
         assert response.headers["location"] == "/static/index.html"
+
+
+class TestStepTrackerEndpoints:
+    """Tests for step tracker API endpoints"""
+
+    def test_get_all_steps(self, client):
+        """Test getting all assessment steps"""
+        response = client.get("/steps")
+        assert response.status_code == 200
+        
+        steps = response.json()
+        assert isinstance(steps, list)
+        assert len(steps) == 6  # 6 total steps (5 numbered steps + 1 review step)
+        
+        # Verify step structure
+        first_step = steps[0]
+        assert "step_id" in first_step
+        assert "step_number" in first_step
+        assert "title" in first_step
+        assert "description" in first_step
+        assert "completed" in first_step
+
+    def test_get_specific_step(self, client):
+        """Test getting a specific step by ID"""
+        response = client.get("/steps/1-preparing")
+        assert response.status_code == 200
+        
+        step = response.json()
+        assert step["step_id"] == "1-preparing"
+        assert step["step_number"] == 1
+        assert step["title"] == "Hello Copilot"
+        assert step["completed"] is False
+
+    def test_get_nonexistent_step(self, client):
+        """Test getting a non-existent step"""
+        response = client.get("/steps/nonexistent-step")
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"]
+
+    def test_mark_step_complete(self, client):
+        """Test marking a step as completed"""
+        response = client.post("/steps/1-preparing/complete")
+        assert response.status_code == 200
+        
+        step = response.json()
+        assert step["completed"] is True
+        assert step["completed_at"] is not None
+
+    def test_mark_nonexistent_step_complete(self, client):
+        """Test marking a non-existent step as completed"""
+        response = client.post("/steps/nonexistent/complete")
+        assert response.status_code == 404
+
+    def test_mark_step_incomplete(self, client):
+        """Test marking a step as incomplete"""
+        # First complete it
+        client.post("/steps/1-preparing/complete")
+        
+        # Then mark it incomplete
+        response = client.post("/steps/1-preparing/incomplete")
+        assert response.status_code == 200
+        
+        step = response.json()
+        assert step["completed"] is False
+        assert step["completed_at"] is None
+
+    def test_get_progress_summary(self, client):
+        """Test getting progress summary"""
+        response = client.get("/steps/progress/summary")
+        assert response.status_code == 200
+        
+        progress = response.json()
+        assert "total_steps" in progress
+        assert "completed_steps" in progress
+        assert "percentage" in progress
+        assert "current_step" in progress
+        
+        assert progress["total_steps"] == 6
+        assert progress["completed_steps"] == 0
+        assert progress["percentage"] == 0.0
+        assert progress["current_step"] == "1-preparing"
+
+    def test_progress_after_completing_steps(self, client):
+        """Test progress updates after completing steps"""
+        # Complete two steps
+        client.post("/steps/1-preparing/complete")
+        client.post("/steps/2-first-introduction/complete")
+        
+        response = client.get("/steps/progress/summary")
+        progress = response.json()
+        
+        assert progress["completed_steps"] == 2
+        assert progress["percentage"] > 0
+        assert progress["current_step"] == "3-copilot-edits"
+
+    def test_reset_all_steps(self, client):
+        """Test resetting all steps"""
+        # Complete some steps
+        client.post("/steps/1-preparing/complete")
+        client.post("/steps/2-first-introduction/complete")
+        
+        # Reset all steps
+        response = client.post("/steps/reset")
+        assert response.status_code == 200
+        assert "reset" in response.json()["message"].lower()
+        
+        # Verify all steps are incomplete
+        response = client.get("/steps")
+        steps = response.json()
+        assert all(not step["completed"] for step in steps)
+
+    def test_step_completion_workflow(self, client):
+        """Test a complete workflow of completing all steps"""
+        step_ids = [
+            "1-preparing",
+            "2-first-introduction",
+            "3-copilot-edits",
+            "4-copilot-agent-mode",
+            "5-copilot-on-github",
+            "x-review"
+        ]
+        
+        for i, step_id in enumerate(step_ids, 1):
+            # Complete the step
+            response = client.post(f"/steps/{step_id}/complete")
+            assert response.status_code == 200
+            
+            # Check progress
+            progress_response = client.get("/steps/progress/summary")
+            progress = progress_response.json()
+            assert progress["completed_steps"] == i
+        
+        # Verify all completed
+        final_progress = client.get("/steps/progress/summary").json()
+        assert final_progress["completed_steps"] == 6
+        assert final_progress["percentage"] == 100.0
+        assert final_progress["current_step"] is None
